@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity AI Agent 網頁測試端</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .chat-container { width: 100%; max-width: 600px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 20px; display: flex; flex-direction: column; height: 500px; }
+        .messages { flex: 1; overflow-y: auto; border: 1px solid #e5e7eb; padding: 10px; border-radius: 6px; margin-bottom: 15px; }
+        .message { margin-bottom: 10px; padding: 8px 12px; border-radius: 6px; max-width: 85%; line-height: 1.4; }
+        .user { background-color: #3b82f6; color: white; align-self: flex-end; margin-left: auto; }
+        .agent { background-color: #e5e7eb; color: #1f2937; white-space: pre-wrap; }
+        .input-area { display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+        button { background-color: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #059669; }
+    </style>
+</head>
+<body>
+    <h2>🤖 Antigravity Vercel 網頁測試端</h2>
+    <div class="chat-container">
+        <div class="messages" id="messages">
+            <div class="message agent">你好！我是 Antigravity Agent。請輸入指令，我會在雲端沙盒中為你執行任務。</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="請輸入訊息或沙盒任務..." onkeydown="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()">送出</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            input.value = '';
+
+            const loadingId = appendMessage('🤖 Agent 正在思考並在 Linux 沙盒中執行工具...', 'agent');
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                const data = await response.json();
+                
+                document.getElementById(loadingId).remove();
+                if (data.reply) {
+                    appendMessage(data.reply, 'agent');
+                } else {
+                    appendMessage('錯誤: ' + (data.error || '未知錯誤'), 'agent');
+                }
+            } catch (err) {
+                document.getElementById(loadingId).remove();
+                appendMessage('連線失敗: ' + err.message, 'agent');
+            }
+        }
+
+        function appendMessage(text, sender) {
+            const container = document.getElementById('messages');
+            const msgDiv = document.createElement('div');
+            const id = 'msg-' + Date.now();
+            msgDiv.id = id;
+            msgDiv.className = 'message ' + sender;
+            msgDiv.innerText = text;
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+            return id;
+        }
+    </script>
+</body>
+</html>

@@ -1,10 +1,7 @@
 {
-  "name": "antigravity-chat-project",
+  "name": "antigravity-vercel-project",
   "version": "1.0.0",
   "type": "module",
-  "scripts": {
-    "start": "node src/index.js"
-  },
   "dependencies": {
     "@google/genai": "^1.0.0",
     "dotenv": "^16.4.5"
