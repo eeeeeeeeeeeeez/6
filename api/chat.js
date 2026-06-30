@@ -20,19 +20,22 @@ export default async function handler(req, res) {
     if (!message) return res.status(400).json({ error: '請提供 message 欄位' });
 
     try {
+        // 初始化最新版 SDK
         const ai = new GoogleGenAI({ apiKey: apiKey });
 
-        // 3. 嚴格強迫使用 Interactions 核心 API (不走傳統 Chat 接口)
-        // 使用目前最新 SDK 的標準單次 Interaction 呼叫方式
-        const interaction = await ai.interactions.create({
-            agent: "antigravity-preview-05-2026",
-            input: message,
-            environment: "remote" // 宣告在託管的遠端 Linux 沙盒執行
+        // 3. 2026 年 5 月全新破壞性改版後的新版語法結構
+        // 核心改為 ai.agents.run 或 ai.agents.execute 
+        const result = await ai.agents.run({
+            agent: "antigravity",
+            prompt: message, // 舊版 input 改為 prompt
+            config: {
+                environment: "remote" // 宣告在託管的遠端 Linux 沙盒執行
+            }
         });
 
-        // 4. 回傳 Agent 執行並觀察完後的最終結果
+        // 4. 回傳全新架構下的文字輸出
         return res.status(200).json({ 
-            reply: interaction.output_text || interaction.text 
+            reply: result.text || result.output_text
         });
 
     } catch (error) {
